@@ -16,7 +16,7 @@ async function process() {
     await Promise.all(pdfFiles.map(async pdfFile => {
         const pdfPath = path.join(srcDir, pdfFile);
         const pages = await pdfToPng(pdfPath, {
-            disableFontFace: false,
+            disableFontFace: true,
             useSystemFonts: true,
             enableXfa: false,
             viewportScale: 10.0,

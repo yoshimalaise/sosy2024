@@ -86,7 +86,7 @@ figure img {
     padding-bottom: 0em !important;
 }
 
-main > section > p:nth-child(-n+2) {
+main > section > p:nth-child(-n+3) {
     display: none;
 }
 
@@ -98,4 +98,8 @@ main > section.container {
 div.keywords::before {
     content: 'Keywords: ';
     font-weight: bold;
+}
+
+h2 {
+    margin-top: 0.5em;
 }
