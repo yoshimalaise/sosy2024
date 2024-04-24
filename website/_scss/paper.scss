@@ -1,0 +1,101 @@
+@import '../node_modules/bootstrap/scss/bootstrap.scss';
+
+@import 'components/twoslash';
+
+div.keywords p {
+    font-size: 80%;
+    font-weight: bold;
+}
+
+div.abstract {
+    margin: 2em 2em 2em 2em;
+    text-align: left;
+}
+div.abstract-title {
+    font-weight: bold;
+    text-align: center;
+    padding: 0;
+    margin-bottom: 0.5em;
+}
+code {
+    font-family: Menlo, Monaco, Consolas, 'Lucida Console', monospace;
+    font-size: 85%;
+    margin: 0;
+    hyphens: manual;
+}
+pre {
+    margin: 1em 0;
+    overflow: auto;
+}
+pre code {
+    padding: 0;
+    overflow: visible;
+    overflow-wrap: normal;
+}
+.sourceCode {
+    background-color: transparent;
+    overflow: visible;
+}
+hr {
+    background-color: #1a1a1a;
+    border: none;
+    height: 1px;
+    margin: 1em 0;
+}
+header {
+    margin-bottom: 4em;
+    text-align: center;
+}
+
+/* CSS for citations */
+div.csl-entry {
+  clear: both;
+}
+
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+
+div.csl-indent {
+  margin-left: 2em;
+}
+
+figcaption::before {
+    counter-increment: figure;
+    content: 'Figure ' counter(figure) ': ';
+}
+
+figure img {
+    max-width: 80%;
+    max-height: 300px;
+}
+
+#title-block-header {
+    margin-bottom: 0em;
+    padding-bottom: 0em !important;
+}
+
+main > section > p:nth-child(-n+2) {
+    display: none;
+}
+
+main > section.container {
+    margin-top: 0;
+    padding-top: 0 !important;
+}
+
+div.keywords::before {
+    content: 'Keywords: ';
+    font-weight: bold;
+}

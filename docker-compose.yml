@@ -1,0 +1,11 @@
+version: '3.7'
+
+services:
+  paper:
+    image: pandoc/latex
+    volumes:
+      - ./paper:/data
+    working_dir: /data/src
+    command: ["-s", "./main.tex", "-o", "../output/paper.html", 
+      "--number-sections", "--template", "../template/template.html",
+      "--cite", "--csl", "../template/ieee.csl"]

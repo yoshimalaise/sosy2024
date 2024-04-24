@@ -1,0 +1,59 @@
+%% The first command in your LaTeX source must be the \documentclass command.
+%%
+%% Options:
+%% twocolumn : Two column layout.
+%% hf: enable header and footer.
+\newcommand{\dquote}[1]{``#1''}
+
+\documentclass[
+% twocolumn,
+% hf,
+]{ceurart}
+
+\sloppy
+
+\usepackage{subcaption}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{minted}
+\usepackage[labelfont=bf,format=plain, 
+justification=raggedright,singlelinecheck=false]{caption}
+
+%% auto break lines
+\setminted{breaklines=true}
+
+\begin{document}
+\copyrightyear{2024}
+\copyrightclause{Copyright for this paper by its authors. Use permitted under Creative Commons License Attribution 4.0 International (CC BY 4.0).}
+\conference{The 1st Solid Symposium Poster Session, co-located with the 2nd Solid Symposium, May 02 -- 03, 2024, Leuven, Belgium}
+
+\title{Towards Distributed Intelligent Tutoring Systems Based on User-owned Progress and Performance Data}
+
+\author{Yoshi {Malaise}}[%
+orcid=0000-0002-3228-6790,
+email=ymalaise@vub.be,
+url=https://wise.vub.ac.be/member/yoshi-malaise,
+] 
+\cormark[1]
+\author{Maxim {Van de Wynckel}}[%
+orcid=0000-0003-0314-7107,
+email=mvdewync@vub.be,
+url=https://maximvdw.be/profile/card,
+]
+\author{Beat Signer}[%
+orcid=0000-0001-9916-0837,
+email=bsigner@vub.be,
+url=https://beatsigner.com,
+]
+
+\address{Web \& Information Systems Engineering Lab, Vrije Universiteit Brussel, 1050 Brussels, Belgium}
+
+\input{sections/abstract}
+
+\maketitle
+\input{sections/introduction}
+\input{sections/solution}
+\input{sections/conclusion}
+
+\bibliography{main}
+\end{document}

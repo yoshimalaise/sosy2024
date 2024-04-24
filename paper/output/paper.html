@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <link rel="stylesheet" href="./css/paper.css?version=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="Yoshi Malaise" />
+  <meta name="author" content="Maxim Van de Wynckel" />
+  <meta name="author" content="Beat Signer" />
+  <title>Towards Distributed Intelligent Tutoring Systems Based on User-owned Progress and Performance Data</title>
+</head>
+<body>
+<header id="title-block-header" class="py-5 container">
+    <div class="alert alert-warning" role="alert">
+        This is a preview of the paper that is generated using Pandoc and may contain lay-out issues. The final version will be available soon.
+    </div>
+
+<h1 class="title">Towards Distributed Intelligent Tutoring Systems Based
+on User-owned Progress and Performance Data</h1>
+<p class="author">Yoshi <span>Malaise</span></p>
+<p class="author">Maxim <span>Van de Wynckel</span></p>
+<p class="author">Beat Signer</p>
+<div class="abstract">
+<div class="abstract-title">Abstract</div>
+<p>The use of recommendation engines to personalise students’ learning
+experiences can be beneficial by providing them with exercises that are
+tailored to their knowledge. However, the use of these systems often
+comes at a cost. Most learning or tutoring systems require the data to
+be stored locally within a proprietary database, limiting the freedom of
+the learner as they move across different systems during their learning
+journey. In addition, these systems might potentially cause additional
+stress, as the learner might feel observed without knowing who has
+access to their learning progress and performance data. We propose a
+solution to this problem by decentralising learning progress and
+performance data in user-owned Solid Pods. We outline the proposed
+solution by describing how it might be applied to an existing
+environment for programming education that already includes research on
+how to align difficulty levels of exercises across different
+systems.</p>
+</div>
+</header>
+
+
+<main>
+<section class="py-5 container">
+<p>[ orcid=0000-0002-3228-6790, email=ymalaise@vub.be,
+url=https://wise.vub.ac.be/member/yoshi-malaise, ]</p>
+<p>[ orcid=0000-0003-0314-7107, email=mvdewync@vub.be,
+url=https://maximvdw.be/profile/card, ]</p>
+<p>[ orcid=0000-0001-9916-0837, email=bsigner@vub.be,
+url=https://beatsigner.com, ]</p>
+<div class="keywords">
+<p>Personal Data Vault , Intelligent Tutoring Systems , Exercise
+Recommendation</p>
+</div>
+<h1 data-number="1" id="introduction"><span
+class="header-section-number">1</span> Introduction</h1>
+<p>The use of Intelligent Tutoring Systems (ITS) to adapt the
+recommendation of exercises based on individual learners has proven to
+be effective <span class="citation"
+data-cites="kulik2016effectiveness">[1]</span>. Evidence suggests that
+more personalised learning leads to increased learner agency,
+self-reliance and motivation <span class="citation"
+data-cites="prain2013personalised">[2]</span>. However, the move towards
+smart learning systems is not without costs. Intelligent Tutoring
+Systems typically require that all of the exercises are stored in one
+centralised system that is often also monitored by teachers and persons
+who are responsible for ultimately grading the students. Previous
+studies revealed that implementing electronic performance monitoring can
+result in lower job satisfaction, increased stress levels, reduced
+autonomy, and it can further be perceived as a violation of trust <span
+class="citation" data-cites="siegel2022impact">[3]</span>. In ideal
+circumstances, the learning environments should also offer a safe space
+for students to practise on problems they find interesting or
+challenging, without having to worry about how they will be perceived by
+teachers. To give an example, a student might be worried that the
+perception of the teacher might change if they are still shown to be
+struggling with material from previous years.</p>
+<p>In the following, we propose a solution to this problem based on the
+Solid specification where (a) <em>the same user progress can be used
+across multiple learning applications</em> to provide a smooth flow
+state and (b) <em>a student can opt in to share progress with individual
+applications for training the model</em>, but without having to provide
+teachers access to their entire performance for individual exercises. We
+discuss the solution by answering some open questions posed by Malaise
+and Signer <span class="citation"
+data-cites="Malaise2023Explorotron">[4]</span>. They proposed the
+<em>Explorotron</em> prototype for programming education. In this
+prototype, there are multiple smaller sub-applications called <em>study
+lenses</em>, each taking a source code file and generating exercises
+based on certain difficulty levels matching the PRIMM methodology <span
+class="citation" data-cites="sentance2019teaching">[5]</span>. While
+their tool offers the possibility to suggest learning experiences based
+on logical progression through built-in study lenses, the authors
+conclude with a few major challenges to overcome:</p>
+<ul>
+<li><p>Students can generate exercises from any source file, so
+generated content is never used by other students, leading to a cold
+start problem that makes recommendations challenging.</p></li>
+<li><p>Students should be free to decide which data they want to share
+and with whom they want to share it.</p></li>
+<li><p>Third-party developers should be able to contribute custom
+exercise generators (study lenses) transparently—the same
+recommendations/profiling should work across the board.</p></li>
+</ul>
+<h1 data-number="2" id="solution"><span
+class="header-section-number">2</span> Solution</h1>
+<p>For our demonstration, we assume that student modelling happens
+through the use of Bayesian Knowledge Tracing (BKT) <span
+class="citation" data-cites="bulut2023introduction">[6]</span> which is
+a common approach in the design of Intelligent Tutoring Systems.
+However, note that with some modifications, other approaches could also
+be supported. BKT is a probabilistic model that requires four parameters
+to be fitted for each learning object as illustrated in Figure <a
+href="#fig:bkt" data-reference-type="ref"
+data-reference="fig:bkt">1</a>.</p>
+<ul>
+<li><p><strong><span
+class="math inline"><em>P</em>(<em>L</em><sub><em>t</em></sub>)</span></strong>:
+The probability that the topic being covered by the learning object is
+mastered at time <span class="math inline"><em>t</em></span>. A value
+<span class="math inline"><em>P</em>(<em>L</em><sub>0</sub>)</span> has
+to be provided to indicate the chance the user knows the topic before
+attempting any exercise. Note that the topics are defined as a
+combination of the knowledge topic and the difficulty level as defined
+later in Section <a href="#subsec:exercises" data-reference-type="ref"
+data-reference="subsec:exercises">2.1</a>.</p></li>
+<li><p><strong><span
+class="math inline"><em>P</em>(<em>S</em>)</span></strong>: The
+probability that the user makes a <em>slip</em>, i.e. gets it wrong even
+though they know the topic.</p></li>
+<li><p><strong><span
+class="math inline"><em>P</em>(<em>G</em>)</span></strong>: The
+probability that the user makes a lucky guess and gets the answer right
+even though they do not know the topic.</p></li>
+<li><p><strong><span
+class="math inline"><em>P</em>(<em>T</em>)</span></strong>: The
+probability that the user actually learns the topic while performing
+this exercise.</p></li>
+</ul>
+<figure id="fig:bkt">
+<embed src="images/BKT.pdf" />
+<figcaption>Example of the Bayesian Knowledge Tracing model per topic
+and difficulty pair</figcaption>
+</figure>
+<p>Based on these values, we can then calculate the updated probability
+that a topic (e.g. “Arrays") is mastered each time the user is presented
+with a new exercise about this topic (<span
+class="math inline"><em>L</em><sub><em>t</em> + 1</sub></span>) based on
+whether they succeeded or failed solving the exercise. It is important
+to note that all these probabilities are exercise dependent and will as
+such not be shared across the applications except for <span
+class="math inline"><em>P</em>(<em>L</em><sub><em>t</em></sub>)</span>.
+This value is the probability that the user knows a topic, which can be
+shared across any application as long as they are referring to the same
+topic.</p>
+<p>We aim to store the result of every exercise the user performs within
+a personal data vault, together with the calculated <span
+class="math inline"><em>P</em>(<em>L</em><sub><em>t</em></sub>)</span>
+for every topic and difficulty level pair as shown in Figure <a
+href="#fig:overview" data-reference-type="ref"
+data-reference="fig:overview">[fig:overview]</a>. Developers of
+educational applications could then request limited-time access to the
+entries of all of their users in order to fit their models, without the
+need to permanently own all the data. Shared information, such as the
+<span
+class="math inline"><em>P</em>(<em>L</em><sub><em>t</em></sub>)</span>,
+will further make it easier for other developers to contribute their own
+extensions that provide exercise recommendations.</p>
+<figure id="lst:exercise">
+<embed src="images/SoSyYoshi.drawio.pdf" />
+<pre class="turtle" data-xleftmargin="0pt" data-fontsize="\small"><code>&lt;&gt; a schema:ReplyAction; # A reply to a question
+  dct:created &quot;2024-03-28T11:57&quot;^^xsd:dateTime;
+  schema:agent &lt;http://.../profile/card#me&gt;;
+  # Exercise question
+  schema:parentItem [ a schema:Question;
+    schema:name &quot;What is the output of ...?&quot;@en;
+    schema:educationalLevel primm:Predict;
+    schema:eduQuestionType &quot;Flashcard&quot;@en;
+    foaf:topic dbr:Array;
+    foaf:agent &lt;https://app1.org/&gt;. # Creator
+  ];
+  schema:result [ a schema:Answer; # User answer
+    schema:answerExplanation [ ... ];
+    schema:review [ a schema:Review;
+      # The grade of the answer (e.g. 5 out of 5)
+      schema:reviewRating 5; schema:bestRating 5.
+    ]
+  ].</code></pre>
+<p>[]<span>Example reply on a question generated by app #1<br />
+using prefixes <code>dbr</code> <span class="citation"
+data-cites="10.1007/978-3-540-76298-0_52">[7]</span>,
+<code>schema</code> <span class="citation"
+data-cites="10.1002/asi.24744">[8]</span>, <code>foaf</code> <span
+class="citation" data-cites="brickley2007foaf">[9]</span> and
+<code>dct</code> <span class="citation"
+data-cites="weibel1998dublin">[10]</span></span> <span id="lst:exercise"
+label="lst:exercise"></span></p>
+<figcaption>Overview of individual apps<br />
+storing exercise results in a Solid Pod</figcaption>
+</figure>
+<p>Users can already indicate their topics of interest in their Solid
+Pod using the topics of interest predicate from the <code>foaf</code>
+vocabulary <span class="citation"
+data-cites="brickley2007foaf">[9]</span>, which can aid educational
+recommendation systems to provide exercises that interest the user.
+Together with data about the past performance, we can create
+personalised learning paths for users based on their strengths and
+weaknesses from multiple sources without creating any vendor lock-in and
+without claiming ownership of the students’ data.</p>
+<p>In addition, the progress of these exercises and topics can
+optionally be shared with an educator or mentor as illustrated in
+Figure <a href="#fig:overview" data-reference-type="ref"
+data-reference="fig:overview">[fig:overview]</a>, allowing for
+personalised feedback and guidance to further support a user’s learning
+journey. The fine-grained control over the data also allows students to
+share the information on topics they are currently covering in class,
+while preventing the need to share that they are still working on other
+topics that they do not want to share.</p>
+<h2 data-number="2.1" id="subsec:exercises"><span
+class="header-section-number">2.1</span> Exercises and Progress</h2>
+<p>Each topic has a set of exercises with their individual difficulty
+level. With our proposed solution we use the existing PRIMM
+principles <span class="citation"
+data-cites="sentance2019teaching">[5]</span> to identify the five stages
+of difficulties for exercises. These stages include the ability to
+<em>predict</em> the output of a piece of code, <em>run</em> a piece of
+code, <em>investigate</em> a piece of code and answer some questions
+about its structure, <em>modify</em> a piece of code so the behaviour
+changes to a new desired result and finally, <em>make</em> a similar
+piece of code from scratch. Together, these five principles identify the
+logical progression of difficulty levels with which to look at a piece
+of code from the perspective of a student. Listing <a
+href="#lst:exercise" data-reference-type="ref"
+data-reference="lst:exercise">2</a> illustrates an example exercise and
+the answer given to this exercise that includes the difficulty level<a
+href="#fn1" class="footnote-ref" id="fnref1"
+role="doc-noteref"><sup>1</sup></a> using the
+<code>educationalLevel</code> predicate.</p>
+<p>A further extension of the architecture would allow third-party
+developers to share the capabilities of their plugins with regards to
+what type of content their plugins could provide so the recommendation
+engine can be a fully separate component querying all content providers
+included by the user without it being centrally controlled by one
+individual.</p>
+<div class="listing">
+<pre class="turtle" data-xleftmargin="0pt" data-fontsize="\small"><code>&lt;#progress_arrays_predict&gt; a sosa:ObservableProperty ;
+    rdfs:label &quot;Prediction progress&quot;@en ; ssn:isPropertyOf &lt;#me&gt; ; 
+    foaf:topic dbr:Array ; schema:educationalLevel primm:Predict .
+&lt;#1711623452&gt; a sosa:Observation ; # P(L_(t+1))
+    sosa:usedProcedure dbr:Bayesian_Knowledge_Tracing ;
+    dct:created &quot;2024-03-28T11:57&quot;^^xsd:dateTime ;
+    foaf:agent &lt;https://app1.org/&gt; ; sosa:observedProperty &lt;#progress_array&gt; ;
+    sosa:hasResult [ qudt:floatPercentage &quot;38.12&quot;^^xsd:float ] .
+&lt;#1711537052&gt; a sosa:Observation ; # P(L_t)
+    sosa:usedProcedure dbr:Bayesian_Knowledge_Tracing ;
+    dcterms:created &quot;2024-03-27T11:57&quot;^^xsd:dateTime ;
+    foaf:agent &lt;https://app1.org/&gt; ; sosa:observedProperty &lt;#progress_array&gt; ;
+    sosa:hasResult [ qudt:floatPercentage &quot;25.0&quot;^^xsd:float ] .</code></pre>
+</div>
+<p>Listing <a href="#lst:progress" data-reference-type="ref"
+data-reference="lst:progress">[lst:progress]</a> shows multiple
+observations of user progress for a particular topic at a given time
+(i.e. <span
+class="math inline"><em>P</em>(<em>L</em><sub><em>t</em></sub>)</span>).
+Each observation, described using the SOSA ontology <span
+class="citation"
+data-cites="janowicz2010stimulus janowicz2019sosa">[11], [12]</span>, is
+created by an application. This progress is shared, allowing each
+educational application to use these observations to determine the
+current knowledge on a topic.</p>
+<h1 data-number="3" id="conclusions"><span
+class="header-section-number">3</span> Conclusions</h1>
+<p>In this paper, we analysed a use case of a digital learning platform
+that helps students to learn programming but currently has some open
+challenges on how personalisation and interoperability with third-party
+developers might be achieved without taking away the learner’s ownership
+of their data. We then proposed a novel solution to support those tasks
+by allowing users to store all their exercise results in Solid Pods and
+giving them full control on how and when applications can access this
+data. In this work, we assumed that both the users and the application
+developers could be fully trusted. If more validation and authority is
+needed, additional layers can be built on top of this system, for
+example by using a blockchain to verify claims, as described in <span
+class="citation"
+data-cites="chowdhury2020towards mikroyannidis2020blockchain">[13],
+[14]</span>.</p>
+<div id="refs" class="references csl-bib-body" role="list">
+<div id="ref-kulik2016effectiveness" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[1] </div><div class="csl-right-inline">J.
+A. Kulik and J. D. Fletcher, <span>“<span class="nocase">Effectiveness
+of Intelligent Tutoring Systems: a Meta-Analytic Review</span>,”</span>
+<em>Review of educational research</em>, vol. 86, 2016.</div>
+</div>
+<div id="ref-prain2013personalised" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[2] </div><div class="csl-right-inline">V.
+Prain <em>et al.</em>, <span>“<span class="nocase">Personalised
+Learning: Lessons to be Learnt</span>,”</span> <em>British Educational
+Research Journal</em>, 2013, doi: <a
+href="https://doi.org/10.1080/01411926.2012.669747">10.1080/01411926.2012.669747</a>.</div>
+</div>
+<div id="ref-siegel2022impact" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[3] </div><div class="csl-right-inline">R.
+Siegel, C. J. König, and V. Lazar, <span>“<span class="nocase">The
+Impact of Electronic Monitoring on Employees’ Job Satisfaction, Stress,
+Performance, and Counterproductive Work Behavior: A
+Meta-Analysis</span>,”</span> <em>Computers in Human Behavior
+Reports</em>, vol. 8, 2022, doi: <a
+href="https://doi.org/10.1016/j.chbr.2022.100227">10.1016/j.chbr.2022.100227</a>.</div>
+</div>
+<div id="ref-Malaise2023Explorotron" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[4] </div><div class="csl-right-inline">Y.
+Malaise and B. Signer, <span>“<span class="nocase">Explorotron: An IDE
+Extension for Guided and Independent Code Exploration and Learning
+(Discussion Paper)</span>,”</span> in <em>Proceedings of the 23rd koli
+calling international conference on computing education research</em>,
+in Koli calling ’23. 2024. doi: <a
+href="https://doi.org/10.1145/3631802.3631816">10.1145/3631802.3631816</a>.</div>
+</div>
+<div id="ref-sentance2019teaching" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[5] </div><div class="csl-right-inline">S.
+Sentance, J. Waite, and M. Kallia, <span>“<span>Teaching Computer
+Programming With PRIMM: A Sociocultural Perspective</span>,”</span>
+<em>Computer Science Education</em>, vol. 29, no. 2–3, 2019, doi: <a
+href="https://doi.org/10.1080/08993408.2019.1608781">10.1080/08993408.2019.1608781</a>.</div>
+</div>
+<div id="ref-bulut2023introduction" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[6] </div><div class="csl-right-inline">O.
+Bulut, J. Shin, S. N. Yildirim-Erbasli, G. Gorgun, and Z. A. Pardos,
+<span>“<span class="nocase">An Introduction to Bayesian Knowledge
+Tracing with PyBKT</span>,”</span> <em>Psych</em>, vol. 5, no. 3,
+2023.</div>
+</div>
+<div id="ref-10.1007/978-3-540-76298-0_52" class="csl-entry"
+role="listitem">
+<div class="csl-left-margin">[7] </div><div class="csl-right-inline">S.
+Auer, C. Bizer, G. Kobilarov, J. Lehmann, R. Cyganiak, and Z. Ives,
+<span>“DBpedia: A nucleus for a web of open data,”</span> in <em>The
+semantic web</em>, K. Aberer, K.-S. Choi, N. Noy, D. Allemang, K.-I.
+Lee, L. Nixon, J. Golbeck, P. Mika, D. Maynard, R. Mizoguchi, G.
+Schreiber, and P. Cudré-Mauroux, Eds., Berlin, Heidelberg: Springer
+Berlin Heidelberg, 2007, pp. 722–735.</div>
+</div>
+<div id="ref-10.1002/asi.24744" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[8] </div><div class="csl-right-inline">A.
+Iliadis, A. Acker, W. Stevens, and S. B. Kavakli, <span>“<span
+class="nocase">One Schema to Rule them All: How Schema.org Models the
+World of Search</span>,”</span> <em>Journal of the Association for
+Information Science and Technology</em>, 2023, doi: <a
+href="https://doi.org/10.1002/asi.24744">https://doi.org/10.1002/asi.24744</a>.</div>
+</div>
+<div id="ref-brickley2007foaf" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[9] </div><div class="csl-right-inline">D.
+Brickley and L. Miller, <span>“<span>FOAF Vocabulary Specification
+0.91</span>.”</span> Citeseer, 2007.</div>
+</div>
+<div id="ref-weibel1998dublin" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[10] </div><div class="csl-right-inline">S.
+Weibel, J. Kunze, C. Lagoze, and M. Wolf, <span>“<span
+class="nocase">Dublin Core Metadata for Resource
+Discovery</span>,”</span> 1998.</div>
+</div>
+<div id="ref-janowicz2010stimulus" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[11] </div><div class="csl-right-inline">K.
+Janowicz and M. Compton, <span>“<span class="nocase">The
+Stimulus-Sensor-Observation Ontology Design Pattern and its Integration
+Into the Semantic Sensor Network Ontology</span>,”</span> in
+<em>Proceedings of SSN 2010, international workshop on semantic sensor
+networks</em>, 2010.</div>
+</div>
+<div id="ref-janowicz2019sosa" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[12] </div><div class="csl-right-inline">K.
+Janowicz, A. Haller, S. J. Cox, D. Le Phuoc, and M. Lefrançois,
+<span>“<span class="nocase">SOSA: A Lightweight Ontology for Sensors,
+Observations, Samples, and Actuators</span>,”</span> <em>Journal of Web
+Semantics</em>, vol. 56, May 2019, doi: <a
+href="https://doi.org/10.1016/j.websem.2018.06.003">10.1016/j.websem.2018.06.003</a>.</div>
+</div>
+<div id="ref-chowdhury2020towards" class="csl-entry" role="listitem">
+<div class="csl-left-margin">[13] </div><div class="csl-right-inline">N.
+Chowdhury, M. Ramachandran, A. Third, A. Mikroyannidis, M. Bachler, and
+J. Domingue, <span>“<span class="nocase">Towards a Blockchain-based
+Decentralised Educational Landscape</span>,”</span> in <em>Proceedings
+of the twelfth international conference on mobile, hybrid, and on-line
+learning</em>, 2020.</div>
+</div>
+<div id="ref-mikroyannidis2020blockchain" class="csl-entry"
+role="listitem">
+<div class="csl-left-margin">[14] </div><div class="csl-right-inline">A.
+Mikroyannidis, <span>“Blockchain applications in education: A case study
+in lifelong learning,”</span> 2020.</div>
+</div>
+</div>
+<section id="footnotes" class="footnotes footnotes-end-of-document"
+role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p>The <code>primm:</code> vocabulary represents a trivial
+vocabulary to describe the difficulty levels in programming exercises<a
+href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+</section>
+</main>
+</body>
+</html>

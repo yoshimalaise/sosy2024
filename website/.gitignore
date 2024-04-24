@@ -1,0 +1,5 @@
+node_modules
+_site
+paper/output/*
+!paper/output/.gitkeep
+
