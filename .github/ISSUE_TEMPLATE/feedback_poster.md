@@ -1,6 +1,6 @@
 ---
 name: Poster Feedback
-about: "Provide your poster feedback for 'Discoverable and Interoperable Augmented Reality Environments Through Solid Pods'"
+about: "Provide your poster feedback for 'Towards Distributed Intelligent Tutoring Systems Based on User-owned Progress and Performance Data'"
 title: '[POSTER] '
 labels: 'feedback'
 assignees: 'Maximvdw'
